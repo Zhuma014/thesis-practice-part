@@ -29,9 +29,41 @@
 ```
 .
 ├── notebooks/
-│   └── nirm3_week1_ptbxl.ipynb   # подключение PTB-XL, EDA, маппинг диагнозов
+│   ├── sist_research.ipynb          # Год 1: Cleveland + XGBoost + SHAP (статья IEEE SIST 2026)
+│   └── nirm3_week1_ptbxl (1).ipynb  # Год 2, НИРМ3 неделя 1: подключение PTB-XL, EDA, маппинг диагнозов
 ├── README.md
 ```
+
+## Описание ноутбуков
+
+### `notebooks/sist_research.ipynb` — Год 1: Cleveland + XGBoost + SHAP
+
+Пайплайн классического ML на клинических данных, легший в основу статьи IEEE SIST 2026:
+
+1. Загрузка Cleveland Heart Disease Dataset (`wget` напрямую в Colab)
+2. Очистка данных: замена `?` на `NaN`, удаление пропусков
+3. One-Hot encoding категориальных признаков (`cp`, `restecg`, `slope`, `thal`)
+4. Стандартизация числовых признаков (`StandardScaler`)
+5. Проверка баланса классов (`target`: healthy / disease)
+6. Обучение базовой модели `XGBClassifier` с `scale_pos_weight` под дисбаланс классов
+7. Подбор гиперпараметров через `GridSearchCV` (max_depth, learning_rate, n_estimators, subsample)
+8. Оценка качества: accuracy, ROC-AUC, classification report, confusion matrix
+9. Интерпретация модели через SHAP (summary plot, waterfall для отдельного пациента, dependence plot по возрасту)
+10. Гендерно-стратифицированный SHAP-анализ (отдельно для мужчин и женщин)
+11. Оптимизация порога классификации (0.5 → 0.3) для повышения recall в клиническом сценарии скрининга
+12. Сравнение confusion matrix и метрик (accuracy/precision/recall/F1) при разных порогах
+
+### `notebooks/nirm3_week1_ptbxl (1).ipynb` — Год 2, НИРМ3 неделя 1: PTB-XL
+
+Первый шаг перехода к ЭКГ-данным, продолжает `sist_research.ipynb`:
+
+1. Установка зависимости `wfdb`
+2. Скачивание и распаковка архива PTB-XL (~1.7 GB) напрямую с physionet.org
+3. Загрузка метаданных (`ptbxl_database.csv`, `scp_statements.csv`)
+4. Маппинг диагностических SCP-кодов на 5 суперклассов: NORM, MI, STTC, CD, HYP
+5. Подсчёт и визуализация распределения классов (bar chart)
+6. Чтение сигнала одной записи через `wfdb.rdsamp` и визуализация всех 12 отведений ЭКГ
+7. Итоговая сводка недели: объём данных (21 837 записей), дисбаланс классов относительно NORM, необходимость балансировки (SMOTE / class weights) и следующие шаги (EDA по возрасту/полу, предобработка сигнала, обучение 1D-CNN)
 
 ## Текущий прогресс (Неделя 1)
 
@@ -48,9 +80,13 @@
 
 ## Запуск
 
-Ноутбук рассчитан на Google Colab:
+Оба ноутбука рассчитаны на Google Colab:
 
-1. Открыть `notebooks/nirm3_week1_ptbxl.ipynb` в Colab
+**`notebooks/sist_research.ipynb`** (Год 1, Cleveland + XGBoost):
+1. Открыть ноутбук в Colab и выполнить ячейки последовательно — датасет скачивается напрямую (`wget`) с GitHub
+
+**`notebooks/nirm3_week1_ptbxl (1).ipynb`** (Год 2, PTB-XL):
+1. Открыть ноутбук в Colab
 2. Выполнить ячейку установки зависимостей: `!pip install wfdb --quiet`
 3. Выполнить ячейку загрузки датасета PTB-XL (архив ~1.7 GB, скачивается напрямую с physionet.org)
 4. Запустить оставшиеся ячейки последовательно
